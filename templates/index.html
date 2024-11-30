@@ -155,10 +155,10 @@
                 handleFileUpload(file);
             });
 
-            const randomButton = document.getElementById("randomButton");
-            randomButton.addEventListener("click", () => {
-                alert("Chargement d'une image aléatoire... (fonctionnalité à implémenter)");
-            });
+            <!-- const randomButton = document.getElementById("randomButton"); -->
+            <!-- randomButton.addEventListener("click", () => { -->
+                <!-- alert("Chargement d'une image aléatoire... (fonctionnalité à implémenter)"); -->
+            <!-- }); -->
         });
 
         async function handleFileUpload(file) {
@@ -206,12 +206,13 @@
             <h3>Téléverser un chèque</h3>
             <p>Glissez et déposez une image ici ou cliquez pour sélectionner.</p>
             <input type="file" id="fileInput" style="display: none;">
+            <img id="originalImage" src="" alt="" style="Height:240px">
         </div>
 
         <!-- Processed Image Section -->
         <div class="card" style="grid-area: processed;height:300px">
             <h3>Image traitée</h3>
-            <img id="processedImage" src="" alt="Image traitée">
+            <img id="processedImage" src="" alt="Image traitée"  style="Height:240px">
         </div>
 
         <!-- Info Section -->
