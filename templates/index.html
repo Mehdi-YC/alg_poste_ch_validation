@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Validation de Chèques</title>
+    <style>
+        /* General styles */
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-color: #121212;
+            color: #e0e0e0;
+        }
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: url('/static/bg.jpg'); /* Background image */
+            background-size: cover; /* Make the image cover the entire element */
+            background-position: center;
+            opacity: 0.07; /* Opacity of the background image */
+            z-index: -1; /* Ensure the image is behind the content */
+        }
+        /* Navbar */
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #1e1e1e;
+            padding: 10px 20px;
+        }
+
+        .navbar .logo {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #ffffff;
+        }
+
+        .navbar .menu a {
+            margin-left: 20px;
+            text-decoration: none;
+            color: #ffffff;
+            font-size: 1em;
+        }
+
+        /* Layout container */
+        .container {
+            display: grid;
+            grid-template-areas:
+                "upload info"
+                "processed info"
+                "processed validity";
+            grid-template-columns: 3fr 1fr;
+            grid-gap: 20px;
+            max-width: 1500px;
+            margin: 20px auto;
+            padding: 10px;
+        }
+
+        /* Mobile responsive layout */
+        @media (max-width: 768px) {
+            .container {
+                grid-template-areas:
+                    "upload"
+                    "processed"
+                    "info"
+                    "validity";
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Cards */
+        .card {
+            background: #1e1e1e;
+            border-radius: 15px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            padding: 20px;
+            text-align: center;
+        }
+
+        /* Drag-and-Drop Area */
+        #dragDropArea {
+            border: 2px dashed #3f51b5;
+            border-radius: 15px;
+            padding: 40px;
+            color: #3f51b5;
+            cursor: pointer;
+        }
+
+        #dragDropArea.dragover {
+            background-color: #263238;
+        }
+
+        /* Images */
+        img {
+            max-width: 100%;
+            border-radius: 15px;
+            height: auto;
+        }
+
+        /* Buttons */
+        .button {
+            background-color: #3f51b5;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 15px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        .button:hover {
+            background-color: #303f9f;
+        }
+
+        /* Info and Validity Styling */
+        .info img {
+            max-width: 50%;
+            margin-top: 10px;
+        }
+    </style>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const dragDropArea = document.getElementById("dragDropArea");
+            const fileInput = document.getElementById("fileInput");
+
+            // Handle drag-and-drop
+            dragDropArea.addEventListener("dragover", (event) => {
+                event.preventDefault();
+                dragDropArea.classList.add("dragover");
+            });
+
+            dragDropArea.addEventListener("dragleave", () => {
+                dragDropArea.classList.remove("dragover");
+            });
+
+            dragDropArea.addEventListener("drop", (event) => {
+                event.preventDefault();
+                dragDropArea.classList.remove("dragover");
+                const file = event.dataTransfer.files[0];
+                handleFileUpload(file);
+            });
+
+            // Handle click to upload
+            dragDropArea.addEventListener("click", () => {
+                fileInput.click();
+            });
+
+            fileInput.addEventListener("change", (event) => {
+                const file = event.target.files[0];
+                handleFileUpload(file);
+            });
+
+            const randomButton = document.getElementById("randomButton");
+            randomButton.addEventListener("click", () => {
+                alert("Chargement d'une image aléatoire... (fonctionnalité à implémenter)");
+            });
+        });
+
+        async function handleFileUpload(file) {
+            const formData = new FormData();
+            formData.append("file", file);
+
+            const response = await fetch("/upload/", {
+                method: "POST",
+                body: formData,
+            });
+
+            const data = await response.json();
+            if (response.ok) {
+                document.getElementById("originalImage").src = data.original_image;
+                document.getElementById("processedImage").src = data.modified_image;
+
+                if (data.person) {
+                    document.getElementById("personInfo").textContent = `Nom : ${data.person.name}`;
+                    document.getElementById("signatureImage").src = data.person.signature;
+                } else {
+                    document.getElementById("personInfo").textContent = "Aucune information trouvée.";
+                }
+
+                document.getElementById("validityStatus").textContent = `Validité : ${data.validity}`;
+            } else {
+                alert("Erreur lors du traitement du chèque.");
+            }
+        }
+    </script>
+</head>
+<body>
+    <!-- Navbar -->
+    <div class="navbar">
+        <img style="height:60px" src="/static/AlgeriePoste.png" alt="Algerie poste logo" >
+        <div class="menu">
+            <a href="/">Accueil</a>
+            <a href="/historique">Historique</a>
+        </div>
+    </div>
+
+    <!-- Content -->
+    <div class="container">
+        <!-- Upload Section -->
+        <div class="card" id="dragDropArea" style="grid-area: upload;height:300px">
+            <h3>Téléverser un chèque</h3>
+            <p>Glissez et déposez une image ici ou cliquez pour sélectionner.</p>
+            <input type="file" id="fileInput" style="display: none;">
+        </div>
+
+        <!-- Processed Image Section -->
+        <div class="card" style="grid-area: processed;height:300px">
+            <h3>Image traitée</h3>
+            <img id="processedImage" src="" alt="Image traitée">
+        </div>
+
+        <!-- Info Section -->
+        <div class="card info" style="grid-area: info;">
+            <h3>Informations sur la personne</h3>
+            <p id="personInfo">Aucune information pour l'instant.</p>
+            <img id="signatureImage" src="" alt="Signature">
+        </div>
+
+        <!-- Validity Section -->
+        <div class="card validity" style="grid-area: validity;">
+            <h3>Validité</h3>
+            <p id="validityStatus">En attente...</p>
+        </div>
+    </div>
+</body>
+</html>
